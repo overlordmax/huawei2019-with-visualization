@@ -364,6 +364,7 @@ class CROSS(object):
         self.validRoad = [self.roadIds[index] for index in self.validRoadIndex]
         self.provider.sort()
         # **** dynamic parameters ****#
+        self.leftCars = []
         self.readyCars = []
         self.carportCarNum = 0
         self.finishCarNum = 0
@@ -402,6 +403,7 @@ class CROSS(object):
                         break
                 #
                 if nextRoad[provideIndex] == -1:
+                    nextCar[provideIndex].updateDynamic(3)
                     provider.firstPriorityCarAct(0)
                     self.update = True
                     CARDISTRIBUTION[1]-=1
@@ -432,14 +434,14 @@ class CROSS(object):
                 done = False
         self.done = done
     def outOfCarport(self):
-        self.readyCars = self.left
-        self.left=[]
+        self.readyCars = self.leftCars
+        self.leftCars = []
         if TIME[0] in self.carport.keys():
             self.carport[TIME[0]].sort()
             self.readyCars.extend(self.carport[TIME[0]])
         if self.readyCars.__len__() == 0:
             return
-        #self.readyCars.sort()
+        self.readyCars.sort()
         for roadId in self.receiver:
             ROADDICT[roadId].setBucket(self.id_)
         for i in range(self.readyCars.__len__()):
@@ -450,12 +452,11 @@ class CROSS(object):
                 print("Car(%d).Road(%d) not in cross(%d).function:class.outOfCarport"%(carId,roadId,self.id_))
             act = road.receiveCar(carId)
             if act!=0:
-                self.left=self.readyCars[i:]
-                break
-            #assert act==0, print("Time(%d),Cross(%d),Road(%d),Car(%d) can't pull away from carport"%(TIME[0],self.id_,roadId,carId))
-            self.carportCarNum -= 1
-            CARDISTRIBUTION[0] -= 1
-            CARDISTRIBUTION[1] += 1
+                self.leftCars.append(self.readCars[i])
+            else:
+                self.carportCarNum -= 1
+                CARDISTRIBUTION[0] -= 1
+                CARDISTRIBUTION[1] += 1
     #
     # other functions
     #
